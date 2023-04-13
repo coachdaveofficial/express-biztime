@@ -5,8 +5,18 @@ const express = require("express");
 
 const app = express();
 const ExpressError = require("./expressError")
+const bodyParser = require('body-parser');
+
+
 
 app.use(express.json());
+// app.use(bodyParser.json());
+
+const companyRoutes = require('./routes/companies');
+app.use('/companies', companyRoutes);
+
+const invoiceRoutes = require('./routes/invoices');
+app.use('/invoices', invoiceRoutes);
 
 
 /** 404 handler */
