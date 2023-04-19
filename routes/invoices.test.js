@@ -73,7 +73,7 @@ describe("GET /invoices/:id", () => {
         expect(response.statusCode).toBe(404)
     });
 })
-describe("GET /companies/:id", () => {
+describe("GET /companies/:code", () => {
     test("Gets a singular company object by id", async () => {
 
         const response = await request(app).get(`/companies/${testCompanies[0].code}`)
@@ -124,5 +124,39 @@ describe("POST /companies", () => {
 })
 
 describe("PUT /invoices/:id", () => {
-    test("Update an invoice amt")
+    test("Update an invoice amt and set paid to true", async () => {
+        const response = await request(app).put(`/invoices/${testInvoice.id}`).send({"amt": "5", "paid": "true"});
+        expect(response.statusCode).toBe(200);
+        expect(response.body.invoice).toHaveProperty('amt', 5);
+        expect(response.body.invoice).toHaveProperty('paid', true);
+        expect(response.body.invoice.paid_date).toBeTruthy;
+
+    })
+    test("Update an invoice amt and set paid to false", async () => {
+        const response = await request(app).put(`/invoices/${testInvoice.id}`).send({"amt": "5", "paid": "false"});
+        expect(response.statusCode).toBe(200);
+        expect(response.body.invoice).toHaveProperty('amt', 5);
+        expect(response.body.invoice).toHaveProperty('paid', false);
+        expect(response.body.invoice.paid_date).toBeNull;
+
+    })
+    
+    test("Throw error if amt not provided", async () => {
+        const response = await request(app).put(`/invoices/${testInvoice.id}`).send({"paid": "false"});
+        expect(response.statusCode).toBe(500);
+    })
+    test("Throw error if paid not provided", async () => {
+        const response = await request(app).put(`/invoices/${testInvoice.id}`).send({"amt": "5"});
+        expect(response.statusCode).toBe(500);
+    })
+    test("Throw error if amt is NaN", async () => {
+        const response = await request(app).put(`/invoices/${testInvoice.id}`).send({"amt": "test", "paid": "false"});
+        expect(response.statusCode).toBe(500);
+        expect(response.body).toHaveProperty('error')
+    })
+    test("Throw error if paid is not true/false", async () => {
+        const response = await request(app).put(`/invoices/${testInvoice.id}`).send({"amt": "5", "paid": "test"});
+        expect(response.statusCode).toBe(500);
+        expect(response.body).toHaveProperty('error')
+    })
 })
